@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Görsel Oluşturucu Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #667eea 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 0;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(30px);
+            border-radius: 40px;
+            padding: 60px;
+            box-shadow: 
+                0 40px 100px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .main-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-section h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            animation: fadeInDown 1s ease, textGlow 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes textGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+
+        .header-section p {
+            font-size: 1.2rem;
+            color: #666;
+            animation: fadeInUp 1s ease;
+        }
+
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .mode-btn {
+            padding: 15px 40px;
+            border: 2px solid #667eea;
+            border-radius: 50px;
+            background: white;
+            color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .mode-btn:hover::before,
+        .mode-btn.active::before {
+            left: 0;
+        }
+
+        .mode-btn:hover,
+        .mode-btn.active {
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .example-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 30px;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .example-chip {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none;
+            box-shadow: 
+                0 4px 15px rgba(102, 126, 234, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .example-chip::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .example-chip:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .example-chip:hover {
+            transform: translateY(-5px) scale(1.08);
+            box-shadow: 
+                0 12px 35px rgba(102, 126, 234, 0.5),
+                0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .advanced-section {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+            border: 2px dashed #667eea;
+            display: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .advanced-section.show {
+            display: block;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-top: 30px;
+            z-index: 1;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .generate-btn i {
+            margin-right: 10px;
+        }
+
+        .loading-section {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .loading-section.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .spinner-border {
+            width: 4rem;
+            height: 4rem;
+            border-width: 0.4rem;
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .result-section.show {
+            display: block;
+            animation: zoomIn 0.5s ease;
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .result-image {
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .result-image:hover {
+            transform: scale(1.02);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(17, 153, 142, 0.4);
+        }
+
+        .new-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .new-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(240, 147, 251, 0.4);
+        }
+
+        .badge-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 768px) {
+            .main-card {
+                padding: 30px 20px;
+            }
+            
+            .header-section h1 {
+                font-size: 2.5rem;
+            }
+
+            .mode-toggle {
+                flex-direction: column;
+            }
+
+            .mode-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-card" data-aos="fade-up">
+            <div class="header-section">
+                <h1><i class="bi bi-palette-fill"></i> AI Görsel Oluşturucu</h1>
+                <p>Hayal gücünüzü yapay zeka ile birleştirin - Tamamen ücretsiz!</p>
+            </div>
+
+            <div class="mode-toggle" data-aos="fade-up" data-aos-delay="100">
+                <button class="mode-btn active" onclick="setMode('simple')">
+                    <i class="bi bi-lightning-charge-fill"></i> Basit Mod
+                </button>
+                <button class="mode-btn" onclick="setMode('advanced')">
+                    <i class="bi bi-gear-fill"></i> Gelişmiş Mod
+                </button>
+            </div>
+
+            <div data-aos="fade-up" data-aos-delay="200">
+                <span class="badge-custom"><i class="bi bi-lightbulb-fill"></i> Örnek İstemler</span>
+                <div class="example-chips mt-3">
+                    <button class="example-chip" onclick="setPrompt('Gün batımında sakin bir göl kenarında yalnız bir tekne, sulu boya tarzı')">
+                        <i class="bi bi-sunset"></i> Gün batımı
+                    </button>
+                    <button class="example-chip" onclick="setPrompt('Fütüristik neon ışıklı bir şehir manzarası, cyberpunk tarzı, detaylı')">
+                        <i class="bi bi-buildings"></i> Cyberpunk
+                    </button>
+                    <button class="example-chip" onclick="setPrompt('Sihirli ormanın derinliklerinde parlayan mantarlar, fantastik sanat')">
+                        <i class="bi bi-tree-fill"></i> Sihirli Orman
+                    </button>
+                    <button class="example-chip" onclick="setPrompt('Uzayda yüzen renkli bir galaksi, detaylı yıldızlar, NASA tarzı')">
+                        <i class="bi bi-stars"></i> Galaksi
+                    </button>
+                    <button class="example-chip" onclick="setPrompt('Tatlı bir kedi astronot, uzay giysisi içinde, dijital sanat')">
+                        <i class="bi bi-rocket-takeoff"></i> Astronot Kedi
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-4" data-aos="fade-up" data-aos-delay="300">
+                <label class="form-label fw-bold"><i class="bi bi-chat-text-fill"></i> Görsel Açıklaması</label>
+                <textarea 
+                    class="form-control" 
+                    id="prompt" 
+                    rows="4"
+                    placeholder="Örnek: Gün batımında mor gökyüzü altında sakin bir deniz manzarası, dijital sanat tarzında, 4K kalite"
+                ></textarea>
+            </div>
+
+            <div class="row mt-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold"><i class="bi bi-arrows-expand"></i> Genişlik</label>
+                    <select class="form-select" id="width">
+                        <option value="512">512px - Hızlı</option>
+                        <option value="768">768px - Orta</option>
+                        <option value="1024" selected>1024px - Yüksek Kalite</option>
+                        <option value="1280">1280px - Ultra HD</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold"><i class="bi bi-arrows-vertical"></i> Yükseklik</label>
+                    <select class="form-select" id="height">
+                        <option value="512">512px - Hızlı</option>
+                        <option value="768">768px - Orta</option>
+                        <option value="1024" selected>1024px - Yüksek Kalite</option>
+                        <option value="1280">1280px - Ultra HD</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="advanced-section" id="advancedSection" data-aos="fade-up" data-aos-delay="500">
+                <h5 class="mb-4"><i class="bi bi-sliders"></i> Gelişmiş Ayarlar</h5>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold"><i class="bi bi-cpu"></i> AI Modeli</label>
+                        <select class="form-select" id="model">
+                            <option value="turbo" selected>Turbo - Hızlı Üretim</option>
+                            <option value="standard">Standard - Dengeli</option>
+                            <option value="quality">Quality - En İyi Kalite</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold"><i class="bi bi-shuffle"></i> Seed (Rastgelelik)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="seed" placeholder="Boş = Rastgele">
+                            <button class="btn btn-outline-secondary" type="button" onclick="randomSeed()">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold"><i class="bi bi-palette2"></i> Stil Önayarları</label>
+                        <select class="form-select" id="style">
+                            <option value="">Yok</option>
+                            <option value="anime">Anime</option>
+                            <option value="photorealistic">Fotoğraf Gerçekçi</option>
+                            <option value="digital-art">Dijital Sanat</option>
+                            <option value="oil-painting">Yağlı Boya</option>
+                            <option value="watercolor">Sulu Boya</option>
+                            <option value="3d-render">3D Render</option>
+                            <option value="cyberpunk">Cyberpunk</option>
+                            <option value="fantasy">Fantasy</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold"><i class="bi bi-badge-hd"></i> Kalite Artırma</label>
+                        <select class="form-select" id="enhance">
+                            <option value="false">Kapalı</option>
+                            <option value="true">Açık - Detay Artırma</option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 mb-3">
+                        <label class="form-label fw-bold"><i class="bi bi-x-circle"></i> Negatif Prompt (İstemediğiniz öğeler)</label>
+                        <input type="text" class="form-control" id="negative" 
+                               placeholder="Örnek: bulanık, düşük kalite, bozuk">
+                    </div>
+                </div>
+            </div>
+
+            <button class="generate-btn" onclick="generateImage()" data-aos="fade-up" data-aos-delay="600">
+                <i class="bi bi-magic"></i> Görsel Oluştur
+            </button>
+
+            <div class="loading-section" id="loadingSection">
+                <div class="spinner-border text-primary" role="status"></div>
+                <h4 class="mt-3">✨ Görseliniz oluşturuluyor...</h4>
+                <p class="text-muted">Bu işlem birkaç saniye sürebilir</p>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <img id="generatedImage" class="result-image" alt="Oluşturulan görsel">
+                <div class="action-buttons">
+                    <button class="action-btn download-btn" onclick="downloadImage()">
+                        <i class="bi bi-download"></i> Görseli İndir
+                    </button>
+                    <button class="action-btn new-btn" onclick="newImage()">
+                        <i class="bi bi-arrow-repeat"></i> Yeni Görsel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        let currentImageUrl = '';
+        let currentMode = 'simple';
+
+        function setMode(mode) {
+            currentMode = mode;
+            const buttons = document.querySelectorAll('.mode-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const advancedSection = document.getElementById('advancedSection');
+            if (mode === 'advanced') {
+                advancedSection.classList.add('show');
+            } else {
+                advancedSection.classList.remove('show');
+            }
+        }
+
+        function setPrompt(text) {
+            document.getElementById('prompt').value = text;
+            document.getElementById('prompt').focus();
+        }
+
+        function randomSeed() {
+            document.getElementById('seed').value = Math.floor(Math.random() * 1000000);
+        }
+
+        async function translateToEnglish(text) {
+            const hasTurkish = /[çğıöşüÇĞİÖŞÜ]/.test(text);
+            
+            if (!hasTurkish) {
+                return text;
+            }
+
+            try {
+                const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=tr|en`);
+                const data = await response.json();
+                
+                if (data.responseStatus === 200 && data.responseData.translatedText) {
+                    return data.responseData.translatedText;
+                }
+                return text;
+            } catch (error) {
+                console.log('Çeviri yapılamadı, orijinal metin kullanılıyor');
+                return text;
+            }
+        }
+
+        async function generateImage() {
+            const prompt = document.getElementById('prompt').value.trim();
+            const width = document.getElementById('width').value;
+            const height = document.getElementById('height').value;
+
+            if (!prompt) {
+                alert('Lütfen bir görsel açıklaması girin!');
+                return;
+            }
+
+            document.getElementById('loadingSection').classList.add('show');
+            document.getElementById('resultSection').classList.remove('show');
+            document.querySelector('.generate-btn').disabled = true;
+
+            try {
+                let translatedPrompt = await translateToEnglish(prompt);
+                
+                if (currentMode === 'advanced') {
+                    const style = document.getElementById('style').value;
+                    const negative = document.getElementById('negative').value;
+                    
+                    if (style) {
+                        translatedPrompt += `, ${style} style`;
+                    }
+                    
+                    if (negative) {
+                        const translatedNegative = await translateToEnglish(negative);
+                        translatedPrompt += `, avoid: ${translatedNegative}`;
+                    }
+                }
+
+                let seed = document.getElementById('seed').value || Math.floor(Math.random() * 1000000);
+                
+                const encodedPrompt = encodeURIComponent(translatedPrompt);
+                currentImageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&nologo=true&seed=${seed}`;
+                
+                const img = document.getElementById('generatedImage');
+                img.onload = function() {
+                    document.getElementById('loadingSection').classList.remove('show');
+                    document.getElementById('resultSection').classList.add('show');
+                    document.querySelector('.generate-btn').disabled = false;
+                };
+                
+                img.onerror = function() {
+                    alert('Görsel oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
+                    document.getElementById('loadingSection').classList.remove('show');
+                    document.querySelector('.generate-btn').disabled = false;
+                };
+                
+                img.src = currentImageUrl;
+
+            } catch (error) {
+                alert('Bir hata oluştu: ' + error.message);
+                document.getElementById('loadingSection').classList.remove('show');
+                document.querySelector('.generate-btn').disabled = false;
+            }
+        }
+
+        async function downloadImage() {
+            try {
+                const response = await fetch(currentImageUrl);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ai-image-${Date.now()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                alert('İndirme sırasında bir hata oluştu.');
+            }
+        }
+
+        function newImage() {
+            document.getElementById('resultSection').classList.remove('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.getElementById('prompt').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                generateImage();
+            }
+        });
+    </script>
+</body>
+</html>
