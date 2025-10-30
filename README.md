@@ -1,6 +1,8 @@
-# 🎨 AI Görsel Oluşturucu Pro
+# 🎨 AI Görsel Oluşturucu 
 
-Modern ve kullanıcı dostu bir yapay zeka görsel oluşturma aracı. Tamamen ücretsiz ve API key gerektirmez!
+Tamamen ücretsiz ve API key gerektirmez!
+
+[Canlı Demo için tıklayınız.](https://ferhatsavtak.github.io/ai-gorsel-olusturucu)
 
 ![AI Görsel Oluşturucu](https://img.shields.io/badge/AI-Image%20Generator-blueviolet?style=for-the-badge)
 ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
